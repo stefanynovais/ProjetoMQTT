@@ -1,35 +1,52 @@
 import React from 'react';
-import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
-import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
+import { StyleSheet, View, Text } from 'react-native';
+import CircularProgress from 'react-native-circular-progress-indicator';
 
-export default function LightControl({ isLightOn, onToggle }) {
+export default function Gauges({ temp, hum }) {
   return (
-    <View style={styles.card}>
-      <TouchableOpacity onPress={onToggle}>
-        <Icon
-          name={isLightOn ? 'lightbulb-on' : 'lightbulb-outline'}
-          size={100}
-          color={isLightOn ? '#F1C40F' : '#555'}
+    <View style={styles.row}>
+      <View style={styles.gaugeBox}>
+        <CircularProgress
+          value={temp}
+          radius={60}
+          title={'°C'}
+          titleColor={'#FFF'}
+          activeStrokeColor={'#E74C3C'}
+          inactiveStrokeColor={'#2C3E50'}
+          textColor={'#FFF'}
         />
-      </TouchableOpacity>
+        <Text style={styles.label}>Temperatura</Text>
+      </View>
 
-      <Text style={styles.label}>
-        {isLightOn ? 'Luz Ligada' : 'Luz Desligada'}
-      </Text>
+      <View style={styles.gaugeBox}>
+        <CircularProgress
+          value={hum}
+          radius={60}
+          title={'%'}
+          titleColor={'#FFF'}
+          activeStrokeColor={'#3498DB'}
+          inactiveStrokeColor={'#2C3E50'}
+          textColor={'#FFF'}
+        />
+        <Text style={styles.label}>Umidade</Text>
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  card: {
-    backgroundColor: '#1E1E1E',
-    padding: 30,
+  row: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+  },
+  gaugeBox: {
+    backgroundColor: '#1E1E1E1',
+    padding: 15,
     borderRadius: 20,
     alignItems: 'center',
-    width: '100%',
-    marginBottom: 20,
+    width: '48%',
   },
-
   label: {
     color: '#AAA',
     marginTop: 10,
