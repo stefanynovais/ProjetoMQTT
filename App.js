@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { env } from 'expo-env';
+// import { env } from 'expo-env';
 import { StyleSheet, View, Text } from 'react-native';
 import MQTTService from './src/services/mqttService';
 import StatusModal from './src/components/StatusModal';
@@ -15,12 +15,21 @@ export default function App() {
     const [temp, setTemp] = useState(0);
     const [hum, setHum] = useState(0);
 
+    // const mqttConfig = {
+    //     host: '0314b7b57b484df48700114479af9f1a.s1.eu.hivemq.cloud',
+    //     port: parseInt(env.MQTT_PORT),
+    //     path: env.MQTT_PATH,
+    //     user: aluno_etec,
+    //     pass: Senha123,
+    //     clientId: 'RN_App_' + Math.random(),
+    // };
+
     const mqttConfig = {
-        host: '0314b7b57b484df48700114479af9f1a.s1.eu.hivemq.cloud',
-        port: parseInt(env.MQTT_PORT),
-        path: env.MQTT_PATH,
-        user: aluno_etec,
-        pass: Senha123,
+        host: process.env.EXPO_PUBLIC_MQTT_HOST,
+        port: parseInt(process.env.EXPO_PUBLIC_MQTT_PORT),
+        path: "/mqtt",
+        user: process.env.EXPO_PUBLIC_MQTT_USER,
+        pass: process.env.EXPO_PUBLIC_MQTT_PASS,
         clientId: 'RN_App_' + Math.random(),
     };
 
@@ -29,6 +38,7 @@ export default function App() {
     }, []);
     const startConnection = () => {
     setShowError(false);
+    console.log(mqttConfig);
     mqtt.connect(
         mqttConfig,
         (topic, message) => {
