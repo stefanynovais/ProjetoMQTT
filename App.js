@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 // import { env } from 'expo-env';
 import { StyleSheet, View, Text } from 'react-native';
 import MQTTService from './src/services/mqttService';
@@ -33,7 +34,23 @@ export default function App() {
         clientId: 'RN_App_' + Math.random(),
     };
 
+    const loadSavedData = async () => {
+        const savedTemp = await AsyncStorage.getItem('temp');
+        const savedHum = await AsyncStorage.getItem('umid');
+        const savedLight = await AsyncStorage.getItem('luz');
+    
+        console.log("TEMP salva:", savedTemp);
+        console.log("UMID salva:", savedHum);
+        console.log("LUZ salva:", savedLight);
+    
+
+        if (savedTemp) setTemp(parseFloat(savedTemp));
+        if (savedHum) setHum(parseFloat(savedHum));
+        if (savedLight) setIsLightOn(savedLight === "1");
+    };
+
     useEffect(() => {
+        loadSavedData();
         startConnection();
     }, []);
     const startConnection = () => {
@@ -42,9 +59,21 @@ export default function App() {
     mqtt.connect(
         mqttConfig,
         (topic, message) => {
-            if (topic === 'casa/temp') setTemp(parseFloat(message));
-            if (topic === 'casa/umid') setHum(parseFloat(message));
-            if (topic === 'casa/luz') setIsLightOn(message === "1");
+            if (topic === 'casa/temp') {
+                setTemp(parseFloat(message));
+                AsyncStorage.setItem('temp', message);
+            }
+        
+            if (topic === 'casa/umid') {
+                setHum(parseFloat(message));
+                AsyncStorage.setItem('umid', message);
+            }
+        
+            if (topic === 'casa/luz') {
+                const value = message === "1";
+                setIsLightOn(value);
+                AsyncStorage.setItem('luz', message);
+            }
         },
         () => {
             setIsConnected(true);
