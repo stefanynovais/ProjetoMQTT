@@ -1,193 +1,31 @@
-// import React, { useState, useEffect } from 'react';
-// import AsyncStorage from '@react-native-async-storage/async-storage';
-// // import { env } from 'expo-env';
-// import { StyleSheet, View, Text } from 'react-native';
-// import MQTTService from './src/services/mqttService';
-// import StatusModal from './src/components/StatusModal';
-// import LightControl from './src/components/LightControl';
-// import Gauges from './src/components/Gauges';
-
-// const mqtt = new MQTTService();
-
-// export default function App() {
-//     const [isConnected, setIsConnected] = useState(false);
-//     const [showError, setShowError] = useState(false);
-//     const [isLightOn, setIsLightOn] = useState(false);
-//     const [temp, setTemp] = useState(0);
-//     const [hum, setHum] = useState(0);
-//     const [history, setHistory] = useState([]);
-//     const [alert, setAlert] = useState("");
-
-//     // const mqttConfig = {
-//     //     host: '0314b7b57b484df48700114479af9f1a.s1.eu.hivemq.cloud',
-//     //     port: parseInt(env.MQTT_PORT),
-//     //     path: env.MQTT_PATH,
-//     //     user: aluno_etec,
-//     //     pass: Senha123,
-//     //     clientId: 'RN_App_' + Math.random(),
-//     // };
-
-//     const mqttConfig = {
-//         host: process.env.EXPO_PUBLIC_MQTT_HOST,
-//         port: parseInt(process.env.EXPO_PUBLIC_MQTT_PORT),
-//         path: "/mqtt",
-//         user: process.env.EXPO_PUBLIC_MQTT_USER,
-//         pass: process.env.EXPO_PUBLIC_MQTT_PASS,
-//         clientId: 'RN_App_' + Math.random(),
-//     };
-
-//     const loadSavedData = async () => {
-//         const savedTemp = await AsyncStorage.getItem('temp');
-//         const savedHum = await AsyncStorage.getItem('umid');
-//         const savedLight = await AsyncStorage.getItem('luz');
-//         const savedHistory = await AsyncStorage.getItem('history');
-    
-//         if (savedTemp) setTemp(parseFloat(savedTemp));
-//         if (savedHum) setHum(parseFloat(savedHum));
-//         if (savedLight) setIsLightOn(savedLight === "1");
-    
-//         if (savedHistory) {
-//             setHistory(JSON.parse(savedHistory));
-//         }
-//     };
-
-//     const saveHistory = async (newData) => {
-//         const old = await AsyncStorage.getItem("history");
-//         const history = old ? JSON.parse(old) : [];
-    
-//         history.push(newData);
-    
-//         if (history.length > 20) {
-//             history.shift();
-//         }
-    
-//         await AsyncStorage.setItem("history", JSON.stringify(history));
-//         setHistory(history);
-//     };
-
-//     useEffect(() => {
-//         loadSavedData();
-//         startConnection();
-//     }, []);
-//     const startConnection = () => {
-//     setShowError(false);
-//     console.log(mqttConfig);
-//     mqtt.connect(
-//         mqttConfig,
-//         (topic, message) => {
-//             const value = parseFloat(message);
-        
-//             if (topic === 'casa/temp') {
-//                 setTemp(value);
-//             }
-        
-//             if (topic === 'casa/umid') {
-//                 setHum(value);
-//             }
-        
-//             if (topic === 'casa/luz') {
-//                 setIsLightOn(message === "1");
-//             }
-
-//             if (topic === 'casa/temp' && value > 30) {
-//                 setAlert("🔥 Temperatura alta!");
-//             }
-            
-//             if (topic === 'casa/umid' && value < 40) {
-//                 setAlert("💧 Umidade baixa!");
-//             }
-        
-//             //registro único para histórico
-//             const newData = {
-//                 temp: topic === 'casa/temp' ? value : temp,
-//                 hum: topic === 'casa/umid' ? value : hum,
-//                 time: new Date().toLocaleTimeString(),
-//             };
-        
-//             saveHistory(newData);
-//         },
-//         () => {
-//             setIsConnected(true);
-//             mqtt.subscribe('casa/temp');
-//             mqtt.subscribe('casa/umid');
-//             mqtt.subscribe('casa/luz');
-//         },
-//         (err) => {
-//             setIsConnected(false);
-//             setShowError(true);
-//         }
-//     );
-// };
-
-// const toggleLight = () => {
-//     const newState = isLightOn ? "0" : "1";
-//     mqtt.publish('casa/luz', newState);
-// };
-// return (
-//     <View style={styles.container}>
-//         <Text style={styles.header}>Smart Home IoT</Text>
-
-//         <LightControl
-//             isLightOn={isLightOn}
-//             onToggle={toggleLight}
-//         />
-
-//         <Gauges temp={temp} hum={hum} />
-
-//         {/* Componente de Status de Conexão */}
-//         <StatusModal
-//             visible={showError}
-//             onRetry={startConnection}
-//             onLater={() => setShowError(false)}
-//         />
-//     </View>
-// );
-// }
-
-// const styles = StyleSheet.create({
-//     container: {
-//         flex: 1,
-//         backgroundColor: '#121212',
-//         padding: 20,
-//         alignItems: 'center',
-//     },
-
-//     header: {
-//         color: '#FFF',
-//         fontSize: 24,
-//         fontWeight: 'bold',
-//         marginTop: 40,
-//         marginBottom: 20,
-//     },
-// });
 
 import React, { useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { ScrollView } from 'react-native';
-import { StyleSheet, View, Text } from 'react-native';
+import { ScrollView, StyleSheet, Text } from 'react-native';
 
 import MQTTService from './src/services/mqttService';
 import StatusModal from './src/components/StatusModal';
 import LightControl from './src/components/LightControl';
 import Gauges from './src/components/Gauges';
 
+// Cria uma instância do serviço MQTT
 const mqtt = new MQTTService();
 
 export default function App() {
 
+    // Estados principais da aplicação
     const [isConnected, setIsConnected] = useState(false);
     const [showError, setShowError] = useState(false);
 
+    // Estados dos sensores e dispositivos
     const [isLightOn, setIsLightOn] = useState(false);
     const [temp, setTemp] = useState(0);
     const [hum, setHum] = useState(0);
 
-    const [history, setHistory] = useState([]);
+    // Apenas alertas exibidos na interface (SEM HISTÓRICO)
     const [alert, setAlert] = useState("");
 
-    let latestTemp = 0;
-    let latestHum = 0;
-
+    // Configurações do broker MQTT
     const mqttConfig = {
         host: process.env.EXPO_PUBLIC_MQTT_HOST,
         port: parseInt(process.env.EXPO_PUBLIC_MQTT_PORT),
@@ -197,137 +35,167 @@ export default function App() {
         clientId: 'RN_App_' + Math.random(),
     };
 
-    // ---------------- LOAD LOCAL DATA ----------------
+    // Carrega os últimos dados salvos localmente
     const loadSavedData = async () => {
-        const savedTemp = await AsyncStorage.getItem('temp');
-        const savedHum = await AsyncStorage.getItem('umid');
-        const savedLight = await AsyncStorage.getItem('luz');
-        const savedHistory = await AsyncStorage.getItem('history');
+        try {
+            const savedTemp = await AsyncStorage.getItem('temp');
+            const savedHum = await AsyncStorage.getItem('umid');
+            const savedLight = await AsyncStorage.getItem('luz');
 
-        if (savedTemp) setTemp(parseFloat(savedTemp));
-        if (savedHum) setHum(parseFloat(savedHum));
-        if (savedLight) setIsLightOn(savedLight === "1");
-
-        if (savedHistory) {
-            setHistory(JSON.parse(savedHistory));
+            if (savedTemp) {
+                setTemp(parseFloat(savedTemp));
+                console.log('📀 Temp carregada:', savedTemp);
+            }
+            if (savedHum) {
+                setHum(parseFloat(savedHum));
+                console.log('📀 Umidade carregada:', savedHum);
+            }
+            if (savedLight) {
+                setIsLightOn(savedLight === "1");
+                console.log('💡 Estado da luz carregado:', savedLight === "1" ? "Ligada" : "Desligada");
+            }
+        } catch (error) {
+            console.log('❌ Erro ao carregar dados:', error);
         }
     };
 
-    // ---------------- SAVE HISTORY ----------------
-    const saveHistory = async (newItem) => {
-        const old = await AsyncStorage.getItem("history");
-        const list = old ? JSON.parse(old) : [];
-
-        const updated = [...list, newItem];
-
-        if (updated.length > 20) updated.shift();
-
-        await AsyncStorage.setItem("history", JSON.stringify(updated));
-        setHistory(updated);
+    // Salva os dados individualmente no AsyncStorage
+    const saveData = async (key, value) => {
+        try {
+            await AsyncStorage.setItem(key, value.toString());
+            console.log(`💾 Salvo no AsyncStorage - ${key}: ${value}`);
+        } catch (error) {
+            console.log(`❌ Erro ao salvar ${key}:`, error);
+        }
     };
 
-    // ---------------- INIT ----------------
+    // Executa ao iniciar o aplicativo
     useEffect(() => {
         const init = async () => {
             await loadSavedData();
             startConnection();
         };
-
         init();
     }, []);
 
-    // ---------------- MQTT ----------------
+    // Inicia a conexão com o broker MQTT
     const startConnection = () => {
         setShowError(false);
 
         mqtt.connect(
             mqttConfig,
 
+            // Recebe mensagens publicadas nos tópicos
             (topic, message) => {
-
                 const value = parseFloat(message);
+                console.log(`📨 Mensagem recebida - ${topic}: ${message}`);
 
-                // -------- TEMPERATURE --------
+                // Atualiza a temperatura recebida
                 if (topic === 'casa/temp') {
-                    latestTemp = value;
                     setTemp(value);
-                    AsyncStorage.setItem('temp', message);
+                    saveData('temp', value);
 
-                    if (value > 30) setAlert("🔥 Temperatura alta!");
-                    else setAlert("");
+                    // Exibe alerta caso a temperatura esteja alta
+                    if (value > 30) {
+                        setAlert("🔥 Temperatura alta!");
+                        console.log(`⚠️ ALERTA: Temperatura alta! ${value}°C`);
+                    } else if (value < 18) {
+                        setAlert("❄️ Temperatura baixa!");
+                        console.log(`⚠️ ALERTA: Temperatura baixa! ${value}°C`);
+                    } else {
+                        setAlert("");
+                    }
                 }
 
-                // -------- HUMIDITY --------
+                // Atualiza a umidade recebida
                 if (topic === 'casa/umid') {
-                    latestHum = value;
                     setHum(value);
-                    AsyncStorage.setItem('umid', message);
+                    saveData('umid', value);
 
-                    if (value < 40) setAlert("💧 Umidade baixa!");
-                    else setAlert("");
+                    // Exibe alerta caso a umidade esteja baixa ou alta
+                    if (value < 40) {
+                        setAlert("💧 Umidade baixa!");
+                        console.log(`⚠️ ALERTA: Umidade baixa! ${value}%`);
+                    } else if (value > 70) {
+                        setAlert("🌊 Umidade alta!");
+                        console.log(`⚠️ ALERTA: Umidade alta! ${value}%`);
+                    } else if (temp <= 30 || temp >= 18) {
+                        // Só limpa o alerta se a temperatura também estiver normal
+                        setAlert("");
+                    }
                 }
 
-                // -------- LIGHT --------
+                // Atualiza o estado da lâmpada
                 if (topic === 'casa/luz') {
-                    setIsLightOn(message === "1");
-                    AsyncStorage.setItem('luz', message);
+                    const isOn = message === "1";
+                    setIsLightOn(isOn);
+                    saveData('luz', message);
+                    console.log(`💡 Luz ${isOn ? "Ligada" : "Desligada"}`);
                 }
-
-                // -------- HISTORY (1 registro consistente) --------
-                const newItem = {
-                    temp: latestTemp,
-                    hum: latestHum,
-                    time: new Date().toLocaleTimeString(),
-                };
-
-                saveHistory(newItem);
             },
 
+            // Executado quando conecta com sucesso
             () => {
                 setIsConnected(true);
+                setShowError(false);
+                console.log('✅ Conectado ao broker MQTT!');
+                
                 mqtt.subscribe('casa/temp');
                 mqtt.subscribe('casa/umid');
                 mqtt.subscribe('casa/luz');
+                
+                console.log('📡 Inscrito nos tópicos: casa/temp, casa/umid, casa/luz');
             },
 
-            () => {
+            // Executado caso ocorra erro na conexão
+            (error) => {
                 setIsConnected(false);
                 setShowError(true);
+                console.log('❌ Erro na conexão MQTT:', error);
             }
         );
     };
 
-    // ---------------- TOGGLE LIGHT ----------------
+    // Liga ou desliga a lâmpada
     const toggleLight = () => {
         const newState = isLightOn ? "0" : "1";
         mqtt.publish('casa/luz', newState);
+        console.log(`🔘 Comando enviado: ${newState === "1" ? "Ligar" : "Desligar"} luz`);
     };
 
-    // ---------------- UI ----------------
+    // Interface principal da aplicação
     return (
-        <ScrollView style={styles.container}>
-            <Text style={styles.header}>Smart Home IoT</Text>
+        <ScrollView
+            style={styles.container}
+            contentContainerStyle={{ alignItems: 'center' }}
+        >
+            <Text style={styles.header}>
+                Smart Home IoT
+            </Text>
 
             <LightControl
                 isLightOn={isLightOn}
                 onToggle={toggleLight}
             />
 
-            <Gauges temp={temp} hum={hum} history={history} />
+            <Gauges
+                temp={temp}
+                hum={hum}
+            />
 
-            {/* ALERT */}
+            {/* Exibe alertas na tela */}
             {alert !== "" && (
                 <Text style={styles.alert}>
                     {alert}
                 </Text>
             )}
 
-            {/* DEBUG (opcional) */}
-            <Text style={{ color: '#AAA', marginTop: 10 }}>
-                Histórico: {history.length}
+            {/* Status da conexão */}
+            <Text style={styles.status}>
+                {isConnected ? "🟢 Conectado" : "🔴 Desconectado"}
             </Text>
 
-            {/* ERROR */}
+            {/* Modal exibido em caso de erro de conexão */}
             <StatusModal
                 visible={showError}
                 onRetry={startConnection}
@@ -337,26 +205,34 @@ export default function App() {
     );
 }
 
-// ---------------- STYLES ----------------
 const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#121212',
         padding: 20,
-        alignItems: 'center',
     },
-
     header: {
         color: '#FFF',
         fontSize: 24,
         fontWeight: 'bold',
         marginTop: 40,
         marginBottom: 20,
+        textAlign: 'center',
     },
-
     alert: {
         color: '#FF4D4D',
         fontWeight: 'bold',
-        marginTop: 10
+        marginTop: 10,
+        fontSize: 16,
+        textAlign: 'center',
+        backgroundColor: '#2A2A2A',
+        padding: 10,
+        borderRadius: 8,
+    },
+    status: {
+        color: '#AAA',
+        marginTop: 20,
+        fontSize: 12,
+        textAlign: 'center',
     }
 });
